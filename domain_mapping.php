@@ -30,17 +30,9 @@ function dm_text_domain() {
 }
 add_action( 'init', 'dm_text_domain' );
 
-function domain_mapping_warning() {
-	echo '<div id="domain-mapping-warning" class="updated fade"><p><strong>' . __( 'Domain Mapping Disabled.', 'wordpress-mu-domain-mapping' ) . '</strong> ' . sprintf( __( 'You must <a href="%1$s">create a network</a> for it to work.', 'wordpress-mu-domain-mapping' ), "http://codex.wordpress.org/Create_A_Network") . '</p></div>';
-}
-
 function dm_add_pages() {
 	global $current_site, $wpdb, $wp_db_version, $wp_version;
 
-	if ( !isset( $current_site ) && $wp_db_version >= 15260 ) { // WP 3.0 network hasn't been configured
-		add_action('admin_notices', 'domain_mapping_warning');
-		return false;
-	}
 	if ( $current_site->path != "/" ) {
 		wp_die( __( "The domain mapping plugin only works if the site is installed in /. This is a limitation of how virtual servers work and is very difficult to work around.", 'wordpress-mu-domain-mapping' ) );
 	}
