@@ -667,13 +667,10 @@ if ( defined( 'DOMAIN_MAPPING' ) ) {
 	add_filter( 'template_directory_uri', 'domain_mapping_post_content' );
 	add_filter( 'plugins_url', 'domain_mapping_post_content' );
 } else {
-	if ( $wp_version == '2.9.2' ) {
-		add_filter( 'admin_url', 'domain_mapping_adminurl', 10, 2 );
-	} else {
-		add_filter( 'admin_url', 'domain_mapping_adminurl', 10, 3 );
-	}
+	add_filter( 'admin_url', 'domain_mapping_adminurl', 10, 3 );
 }
 add_action( 'admin_init', 'dm_redirect_admin' );
+
 if ( isset( $_GET[ 'dm' ] ) )
 	add_action( 'template_redirect', 'remote_login_js' );
 
