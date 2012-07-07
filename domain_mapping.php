@@ -504,7 +504,7 @@ function dm_manage_page() {
 	echo "</div>";
 }
 
-function domain_mapping_siteurl( $setting ) {
+function domain_mapping_siteurl( $setting = false ) {
 	global $wpdb;
 
 	// To reduce the number of database queries, save the results the first time we encounter each blog ID.
@@ -597,15 +597,28 @@ function domain_mapping_adminurl( $url, $path, $blog_id = 0 ) {
 	return $url;
 }
 
+/**
+ * Replaces an old/original URL in post content with the new mapped domain. Seems
+ * useful for those transferring to a new server, but maybe not so useful for those
+ * who have always been on a domain mapped multisite environment.
+ *
+ * @todo try removing this hook and playing with internal linking
+ *
+ * @param $post_content Content of the post!
+ *
+ * @return mixed New content of the post...
+ */
 function domain_mapping_post_content( $post_content ) {
-	global $wpdb;
 
 	$orig_url = get_original_url( 'siteurl' );
 
-	$url = domain_mapping_siteurl( 'NA' );
-	if ( $url == 'NA' )
+	$url = domain_mapping_siteurl();
+
+	if ( $url )
+		return str_replace( $orig_url, $url, $post_content );
+	else
 		return $post_content;
-	return str_replace( $orig_url, $url, $post_content );
+
 }
 
 /**
