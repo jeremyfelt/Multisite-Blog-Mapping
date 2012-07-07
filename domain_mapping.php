@@ -711,7 +711,9 @@ add_action( 'template_redirect', 'redirect_to_mapped_domain' );
 
 function get_dm_hash() {
 	$remote_login_hash = get_site_option( 'dm_hash' );
-	if ( null == $remote_login_hash ) {
+
+	//default empty return is false, we should also avoid 0, NULL, and an empty string
+	if ( empty( $remote_login_hash ) ) {
 		$remote_login_hash = md5( time() );
 		update_site_option( 'dm_hash', $remote_login_hash );
 	}
