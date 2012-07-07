@@ -630,19 +630,33 @@ function dm_redirect_admin() {
 	}
 }
 
+/**
+ * Redirects the login URL ( i.e. www.domain.com/wp-login.php ) to the original site URL
+ * that WordPress is aware of ( i.e. domain.my.sites.com/wp-login.php )
+ *
+ * This used to use Javascript and be attached to the login_head action hook, but I'm trying
+ * it out in login_init instead to see what happens in the hopes that was just some back compat
+ * thing.
+ *
+ * @return bool false if this is not a valid request
+ */
 function redirect_login_to_orig() {
-	if ( !get_site_option( 'dm_remote_login' ) || $_GET[ 'action' ] == 'logout' || isset( $_GET[ 'loggedout' ] ) ) {
+
+	if ( isset( $_GET['action'] ) && 'logout' == $_GET['action'] )
 		return false;
-	}
+
+	if ( ! get_site_option( 'dm_remote_login' ) || isset( $_GET['loggedout'] ) )
+		return false;
+
 	$url = get_original_url( 'siteurl' );
-	if ( $url != site_url() ) {
-		$url .= "/wp-login.php";
-		echo "<script type='text/javascript'>\nwindow.location = '$url'</script>";
-	}
+
+	if ( $url != site_url() )
+		wp_redirect( $url . '/wp-login.php' );
+
 }
 
-// fixes the plugins_url
-function domain_mapping_plugins_uri( $full_url, $path=NULL, $plugin=NULL ) {
+//fixes the plugins_url
+function domain_mapping_plugins_uri( $full_url ) {
 	return get_option( 'siteurl' ) . substr( $full_url, stripos( $full_url, PLUGINDIR ) - 1 );
 }
 
@@ -657,7 +671,7 @@ if ( defined( 'DOMAIN_MAPPING' ) ) {
 	add_filter( 'pre_option_home', 'domain_mapping_siteurl' );
 	add_filter( 'the_content', 'domain_mapping_post_content' );
 	add_action( 'wp_head', 'remote_login_js_loader' );
-	add_action( 'login_head', 'redirect_login_to_orig' );
+	add_action( 'login_init', 'redirect_login_to_orig' );
 	add_action( 'wp_logout', 'remote_logout_loader', 9999 );
 
 	add_filter( 'stylesheet_uri', 'domain_mapping_post_content' );
