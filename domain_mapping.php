@@ -83,7 +83,7 @@ function maybe_create_db() {
 
 	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
 	$wpdb->dmtablelogins = $wpdb->base_prefix . 'domain_mapping_logins';
-	if ( dm_site_admin() ) {
+	if ( is_super_admin() ) {
 		$created = 0;
 		if ( $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->dmtable}'") != $wpdb->dmtable ) {
 			$wpdb->query( "CREATE TABLE IF NOT EXISTS `{$wpdb->dmtable}` (
@@ -115,7 +115,7 @@ function maybe_create_db() {
 function dm_domains_admin() {
 	global $wpdb, $current_site;
 
-	if ( false == dm_site_admin() )
+	if ( ! is_super_admin() )
 		return false;
 
 	dm_sunrise_warning();
@@ -244,10 +244,10 @@ function dm_domain_listing( $rows, $heading = '' ) {
 }
 
 function dm_admin_page() {
-	global $wpdb, $current_site;
-	if ( false == dm_site_admin() ) { // paranoid? moi?
+	global $current_site;
+
+	if ( ! is_super_admin() )
 		return false;
-	}
 
 	dm_sunrise_warning();
 	maybe_create_db();
@@ -384,7 +384,7 @@ function dm_sunrise_warning( $die = true ) {
 		if ( !$die )
 			return true;
 
-		if ( dm_site_admin() ) {
+		if ( is_super_admin() ) {
 			wp_die( sprintf( __( "Please copy sunrise.php to %s/sunrise.php and ensure the SUNRISE definition is in %swp-config.php", 'wordpress-mu-domain-mapping' ), WP_CONTENT_DIR, ABSPATH ) );
 		} else {
 			wp_die( __( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' ) );
@@ -393,7 +393,7 @@ function dm_sunrise_warning( $die = true ) {
 		if ( !$die )
 			return true;
 
-		if ( dm_site_admin() ) {
+		if ( is_super_admin() ) {
 			wp_die( sprintf( __( "Please uncomment the line <em>define( 'SUNRISE', 'on' );</em> or add it to your %swp-config.php", 'wordpress-mu-domain-mapping' ), ABSPATH ) );
 		} else {
 			wp_die( __( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' ) );
@@ -402,7 +402,7 @@ function dm_sunrise_warning( $die = true ) {
 		if ( !$die )
 			return true;
 
-		if ( dm_site_admin() ) {
+		if ( is_super_admin() ) {
 			wp_die( sprintf( __( "Please edit your %swp-config.php and move the line <em>define( 'SUNRISE', 'on' );</em> above the last require_once() in that file or make sure you updated sunrise.php.", 'wordpress-mu-domain-mapping' ), ABSPATH ) );
 		} else {
 			wp_die( __( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' ) );
@@ -424,7 +424,7 @@ function dm_manage_page() {
 	echo "<div class='wrap'><h2>" . __( 'Domain Mapping', 'wordpress-mu-domain-mapping' ) . "</h2>";
 
 	if ( false == get_site_option( 'dm_ipaddress' ) && false == get_site_option( 'dm_cname' ) ) {
-		if ( dm_site_admin() ) {
+		if ( is_super_admin() ) {
 			_e( "Please set the IP address or CNAME of your server in the <a href='wpmu-admin.php?page=dm_admin_page'>site admin page</a>.", 'wordpress-mu-domain-mapping' );
 		} else {
 			_e( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' );
@@ -826,16 +826,6 @@ function ra_domain_mapping_field( $column, $blog_id ) {
 }
 add_action( 'manage_blogs_custom_column', 'ra_domain_mapping_field', 1, 3 );
 add_action( 'manage_sites_custom_column', 'ra_domain_mapping_field', 1, 3 );
-
-function dm_site_admin() {
-	if ( function_exists( 'is_super_admin' ) ) {
-		return is_super_admin();
-	} elseif ( function_exists( 'is_site_admin' ) ) {
-		return is_site_admin();
-	} else {
-		return true;
-	}
-}
 
 function dm_idn_warning() {
 	return sprintf( __( 'International Domain Names should be in <a href="%s">punycode</a> format.', 'wordpress-mu-domain-mapping' ), "http://api.webnic.cc/idnconversion.html" );
