@@ -31,25 +31,13 @@ function dm_text_domain() {
 add_action( 'init', 'dm_text_domain' );
 
 function dm_add_pages() {
-	global $current_site, $wpdb, $wp_db_version, $wp_version;
+	global $current_site, $wpdb, $wp_version;
 
-	if ( $current_site->path != "/" ) {
-		wp_die( __( "The domain mapping plugin only works if the site is installed in /. This is a limitation of how virtual servers work and is very difficult to work around.", 'wordpress-mu-domain-mapping' ) );
-	}
+	if ( '/' !=  $current_site->path )
+		wp_die( __( 'The domain mapping plugin only works if the site is installed in /. This is a limitation of how virtual servers work and is very difficult to work around.', 'wordpress-mu-domain-mapping' ) );
 
-	if ( get_site_option( 'dm_user_settings' ) && $current_site->blog_id != $wpdb->blogid && !dm_sunrise_warning( false ) ) {
+	if ( get_site_option( 'dm_user_settings' ) && $current_site->blog_id != $wpdb->blogid && !dm_sunrise_warning( false ) )
 		add_management_page(__( 'Domain Mapping', 'wordpress-mu-domain-mapping'), __( 'Domain Mapping', 'wordpress-mu-domain-mapping'), 'manage_options', 'domainmapping', 'dm_manage_page' );
-	}
-
-	if ( dm_site_admin() && version_compare( $wp_version, '3.0.9', '<=' ) ) {
-		if ( version_compare( $wp_version, '3.0.1', '<=' ) ) {
-			add_submenu_page('wpmu-admin.php', __( 'Domain Mapping', 'wordpress-mu-domain-mapping' ), __( 'Domain Mapping', 'wordpress-mu-domain-mapping'), 'manage_options', 'dm_admin_page', 'dm_admin_page');
-			add_submenu_page('wpmu-admin.php', __( 'Domains', 'wordpress-mu-domain-mapping' ), __( 'Domains', 'wordpress-mu-domain-mapping'), 'manage_options', 'dm_domains_admin', 'dm_domains_admin');
-		} else {
-			add_submenu_page('ms-admin.php', __( 'Domain Mapping', 'wordpress-mu-domain-mapping' ), 'Domain Mapping', 'manage_options', 'dm_admin_page', 'dm_admin_page');
-			add_submenu_page('ms-admin.php', __( 'Domains', 'wordpress-mu-domain-mapping' ), 'Domains', 'manage_options', 'dm_domains_admin', 'dm_domains_admin');
-		}
-	}
 
 	return NULL;
 }
