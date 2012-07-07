@@ -643,16 +643,17 @@ function dm_redirect_admin() {
 function redirect_login_to_orig() {
 
 	if ( isset( $_GET['action'] ) && 'logout' == $_GET['action'] )
-		return false;
+		return;
 
 	if ( ! get_site_option( 'dm_remote_login' ) || isset( $_GET['loggedout'] ) )
-		return false;
+		return;
 
 	$url = get_original_url( 'siteurl' );
 
 	if ( $url != site_url() )
 		wp_redirect( $url . '/wp-login.php' );
 
+	return;
 }
 
 //fixes the plugins_url
