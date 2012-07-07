@@ -606,9 +606,16 @@ function domain_mapping_post_content( $post_content ) {
 	return str_replace( $orig_url, $url, $post_content );
 }
 
+/**
+ * Redirects the admin URL ( i.e. www.domain.com/wp-admin/ ) to the original site URL
+ * that WordPress is aware of (i.e. domain.my.sites.com/wp-admin/ )
+ *
+ * @return NULL if this is not a valid request
+ */
 function dm_redirect_admin() {
+
 	// don't redirect admin ajax calls
-	if ( strpos( $_SERVER['REQUEST_URI'], 'wp-admin/admin-ajax.php' ) !== false )
+	if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
 		return;
 
 	if ( get_site_option( 'dm_redirect_admin' ) ) {
@@ -629,6 +636,7 @@ function dm_redirect_admin() {
 		}
 	}
 }
+add_action( 'admin_init', 'dm_redirect_admin' );
 
 /**
  * Redirects the login URL ( i.e. www.domain.com/wp-login.php ) to the original site URL
@@ -638,7 +646,7 @@ function dm_redirect_admin() {
  * it out in login_init instead to see what happens in the hopes that was just some back compat
  * thing.
  *
- * @return bool false if this is not a valid request
+ * @return NULL if this is not a valid request
  */
 function redirect_login_to_orig() {
 
@@ -650,8 +658,10 @@ function redirect_login_to_orig() {
 
 	$url = get_original_url( 'siteurl' );
 
-	if ( $url != site_url() )
+	if ( $url != site_url() ) {
 		wp_redirect( $url . '/wp-login.php' );
+		exit;
+	}
 
 	return;
 }
@@ -684,7 +694,6 @@ if ( defined( 'DOMAIN_MAPPING' ) ) {
 } else {
 	add_filter( 'admin_url', 'domain_mapping_adminurl', 10, 3 );
 }
-add_action( 'admin_init', 'dm_redirect_admin' );
 
 if ( isset( $_GET[ 'dm' ] ) )
 	add_action( 'template_redirect', 'remote_login_js' );
