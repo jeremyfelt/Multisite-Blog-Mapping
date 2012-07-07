@@ -83,8 +83,10 @@ function maybe_create_db() {
 
 	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
 	$wpdb->dmtablelogins = $wpdb->base_prefix . 'domain_mapping_logins';
+
 	if ( is_super_admin() ) {
-		$created = 0;
+		$created = false;
+
 		if ( $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->dmtable}'") != $wpdb->dmtable ) {
 			$wpdb->query( "CREATE TABLE IF NOT EXISTS `{$wpdb->dmtable}` (
 				`id` bigint(20) NOT NULL auto_increment,
@@ -96,6 +98,7 @@ function maybe_create_db() {
 			);" );
 			$created = 1;
 		}
+
 		if ( $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->dmtablelogins}'") != $wpdb->dmtablelogins ) {
 			$wpdb->query( "CREATE TABLE IF NOT EXISTS `{$wpdb->dmtablelogins}` (
 				`id` varchar(32) NOT NULL,
@@ -106,9 +109,9 @@ function maybe_create_db() {
 			);" );
 			$created = 1;
 		}
-		if ( $created ) {
+
+		if ( $created )
 			echo '<div id="message" class="updated fade"><p><strong>' . __( 'Domain mapping database table created.', 'wordpress-mu-domain-mapping' ) . '</strong></p></div>';
-		}
 	}
 }
 
@@ -380,35 +383,36 @@ if ( isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] == 'domainmapping' )
 	add_action( 'admin_init', 'dm_handle_actions' );
 
 function dm_sunrise_warning( $die = true ) {
-	if ( !file_exists( WP_CONTENT_DIR . '/sunrise.php' ) ) {
+
+	if ( ! file_exists( WP_CONTENT_DIR . '/sunrise.php' ) ) {
+		if ( ! $die )
+			return true;
+
+		if ( is_super_admin() )
+			wp_die( sprintf( __( 'Please copy sunrise.php to %s/sunrise.php and ensure the SUNRISE definition is in %swp-config.php', 'wordpress-mu-domain-mapping' ), WP_CONTENT_DIR, ABSPATH ) );
+		else
+			wp_die( __( 'This plugin has not been configured correctly yet.', 'wordpress-mu-domain-mapping' ) );
+
+	} elseif ( ! defined( 'SUNRISE' ) ) {
 		if ( !$die )
 			return true;
 
-		if ( is_super_admin() ) {
-			wp_die( sprintf( __( "Please copy sunrise.php to %s/sunrise.php and ensure the SUNRISE definition is in %swp-config.php", 'wordpress-mu-domain-mapping' ), WP_CONTENT_DIR, ABSPATH ) );
-		} else {
-			wp_die( __( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' ) );
-		}
-	} elseif ( !defined( 'SUNRISE' ) ) {
-		if ( !$die )
+		if ( is_super_admin() )
+			wp_die( sprintf( __( 'Please uncomment the line <em>define( \'SUNRISE\', \'on\' );</em> or add it to your %swp-config.php', 'wordpress-mu-domain-mapping' ), ABSPATH ) );
+		else
+			wp_die( __( 'This plugin has not been configured correctly yet.', 'wordpress-mu-domain-mapping' ) );
+
+	} elseif ( ! defined( 'SUNRISE_LOADED' ) ) {
+		if ( ! $die )
 			return true;
 
-		if ( is_super_admin() ) {
-			wp_die( sprintf( __( "Please uncomment the line <em>define( 'SUNRISE', 'on' );</em> or add it to your %swp-config.php", 'wordpress-mu-domain-mapping' ), ABSPATH ) );
-		} else {
-			wp_die( __( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' ) );
-		}
-	} elseif ( !defined( 'SUNRISE_LOADED' ) ) {
-		if ( !$die )
-			return true;
+		if ( is_super_admin() )
+			wp_die( sprintf( __( 'Please edit your %swp-config.php and move the line <em>define( \'SUNRISE\', \'on\' );</em> above the last require_once() in that file or make sure you updated sunrise.php.', 'wordpress-mu-domain-mapping' ), ABSPATH ) );
+		else
+			wp_die( __( 'This plugin has not been configured correctly yet.', 'wordpress-mu-domain-mapping' ) );
 
-		if ( is_super_admin() ) {
-			wp_die( sprintf( __( "Please edit your %swp-config.php and move the line <em>define( 'SUNRISE', 'on' );</em> above the last require_once() in that file or make sure you updated sunrise.php.", 'wordpress-mu-domain-mapping' ), ABSPATH ) );
-		} else {
-			wp_die( __( "This plugin has not been configured correctly yet.", 'wordpress-mu-domain-mapping' ) );
-		}
 	}
-	return false;
+	return true;
 }
 
 
