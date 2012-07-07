@@ -505,35 +505,38 @@ function dm_manage_page() {
 }
 
 function domain_mapping_siteurl( $setting ) {
-	global $wpdb, $current_blog;
+	global $wpdb;
 
 	// To reduce the number of database queries, save the results the first time we encounter each blog ID.
 	static $return_url = array();
 
 	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
 
-	if ( !isset( $return_url[ $wpdb->blogid ] ) ) {
+	if ( ! isset( $return_url[ $wpdb->blogid ] ) ) {
+
+		//suppress errors and capture the old value
 		$s = $wpdb->suppress_errors();
 
-		if ( get_site_option( 'dm_no_primary_domain' ) == 1 ) {
+		if ( 1 == get_site_option( 'dm_no_primary_domain' ) ) {
 			$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND domain = '" . $wpdb->escape( $_SERVER[ 'HTTP_HOST' ] ) . "' LIMIT 1" );
 			if ( null == $domain ) {
-				$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( "siteurl" ) );
+				$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( 'siteurl' ) );
 				return $return_url[ $wpdb->blogid ];
 			}
 		} else {
 			// get primary domain, if we don't have one then return original url.
 			$domain = $wpdb->get_var( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id = '{$wpdb->blogid}' AND active = 1 LIMIT 1" );
 			if ( null == $domain ) {
-				$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( "siteurl" ) );
+				$return_url[ $wpdb->blogid ] = untrailingslashit( get_original_url( 'siteurl' ) );
 				return $return_url[ $wpdb->blogid ];
 			}
 		}
 
+		//reset error suppression to old value
 		$wpdb->suppress_errors( $s );
-		if ( false == isset( $_SERVER[ 'HTTPS' ] ) )
-			$_SERVER[ 'HTTPS' ] = 'Off';
-		$protocol = ( 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) ) ? 'https://' : 'http://';
+
+		$protocol = is_ssl() ? 'https://' : 'http://';
+
 		if ( $domain ) {
 			$return_url[ $wpdb->blogid ] = untrailingslashit( $protocol . $domain  );
 			$setting = $return_url[ $wpdb->blogid ];
@@ -551,34 +554,33 @@ function domain_mapping_siteurl( $setting ) {
 function get_original_url( $url, $blog_id = 0 ) {
 	global $wpdb;
 
-	if ( $blog_id != 0 ) {
-		$id = $blog_id;
-	} else {
+	if ( 0 == $blog_id )
 		$id = $wpdb->blogid;
-	}
+	else
+		$id = $blog_id;
 
 	static $orig_urls = array();
+
 	if ( ! isset( $orig_urls[ $id ] ) ) {
 		if ( defined( 'DOMAIN_MAPPING' ) )
 			remove_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
-		if ( $blog_id == 0 ) {
+
+		if ( 0 == $blog_id )
 			$orig_url = get_option( $url );
-		} else {
+		else
 			$orig_url = get_blog_option( $blog_id, $url );
-		}
-		if ( isset( $_SERVER[ 'HTTPS' ] ) && 'on' == strtolower( $_SERVER[ 'HTTPS' ] ) ) {
-			$orig_url = str_replace( "http://", "https://", $orig_url );
-		} else {
-			$orig_url = str_replace( "https://", "http://", $orig_url );
-		}
-		if ( $blog_id == 0 ) {
-			$orig_urls[ $wpdb->blogid ] = $orig_url;
-		} else {
-			$orig_urls[ $blog_id ] = $orig_url;
-		}
+
+		if ( is_ssl() )
+			$orig_url = str_replace( 'http://', 'https://', $orig_url );
+		else
+			$orig_url = str_replace( 'https://', 'http://', $orig_url );
+
+		$orig_urls[ $id ] = $orig_url;
+
 		if ( defined( 'DOMAIN_MAPPING' ) )
 			add_filter( 'pre_option_' . $url, 'domain_mapping_' . $url );
 	}
+
 	return $orig_urls[ $id ];
 }
 
