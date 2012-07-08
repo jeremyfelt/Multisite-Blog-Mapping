@@ -30,8 +30,8 @@ $wpdb->suppress_errors( $suppression );
 /**
  * If we found a blog_id to match the domain above, then we turn to WordPress to get the
  * remaining bits of info from the standard wp_blogs and wp_site tables. Then we squash
- * it all together in the $current_site and $current_blog globals so that it is available
- * for the remaining operations on this page request.
+ * it all together in the $current_site, $current_blog, $site_id, and $blog_id globals so
+ * that it is available for the remaining operations on this page request.
  */
 if( $domain_mapping_blog_id ) {
 
