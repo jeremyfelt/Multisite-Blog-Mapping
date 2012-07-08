@@ -46,8 +46,7 @@ if( $domain_mapping_blog_id ) {
 
 	define( 'COOKIE_DOMAIN', $requested_domain );
 
-	if( function_exists( 'get_current_site_name' ) )
-		$current_site = get_current_site_name( $current_site );
+	$current_site = get_current_site_name( $current_site );
 
 	define( 'DOMAIN_MAPPING', 1 );
 }
