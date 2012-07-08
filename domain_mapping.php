@@ -30,14 +30,6 @@ function dm_text_domain() {
 }
 add_action( 'init', 'dm_text_domain' );
 
-function dm_add_pages() {
-	global $current_site;
-
-	if ( '/' !=  $current_site->path )
-		wp_die( __( 'The domain mapping plugin only works if the site is installed in /. This is a limitation of how virtual servers work and is very difficult to work around.', 'wordpress-mu-domain-mapping' ) );
-}
-add_action( 'admin_menu', 'dm_add_pages' );
-
 function dm_network_pages() {
 	add_submenu_page( 'settings.php', 'Domain Mapping', 'Domain Mapping', 'manage_options', 'dm_admin_page', 'dm_admin_page' );
 	add_submenu_page( 'settings.php', 'Domains', 'Domains', 'manage_options', 'dm_domains_admin', 'dm_domains_admin' );
