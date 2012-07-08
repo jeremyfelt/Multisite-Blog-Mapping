@@ -46,8 +46,6 @@ if( $domain_mapping_blog_id ) {
 
 	define( 'COOKIE_DOMAIN', $requested_domain );
 
-	$current_site = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->site WHERE id = %d LIMIT 0,1", $current_blog->site_id ) );
-
 	if( function_exists( 'get_current_site_name' ) )
 		$current_site = get_current_site_name( $current_site );
 
