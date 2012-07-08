@@ -41,12 +41,19 @@ if( $domain_mapping_blog_id ) {
 	$current_blog->domain = $requested_domain;
 	$current_blog->path = '/';
 
+	//set the blog_id and site_id globals that WordPress expects
 	$blog_id = $domain_mapping_blog_id;
 	$site_id = $current_blog->site_id;
 
-	define( 'COOKIE_DOMAIN', $requested_domain );
+	$current_site = $wpdb->get_row( $wpdb->prepare( "SELECT * from $wpdb->site WHERE id = %d LIMIT 0,1", $site_id ) );
 
+	//add blog_id to the current_site object (necessary)
+	$current_site->blog_id = $blog_id;
+
+	//have the site name attached to the current_site object (necessary)
 	$current_site = get_current_site_name( $current_site );
 
+	define( 'COOKIE_DOMAIN', $requested_domain );
 	define( 'DOMAIN_MAPPING', 1 );
+
 }
