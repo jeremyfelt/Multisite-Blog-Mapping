@@ -48,9 +48,6 @@ if( $domain_mapping_blog_id ) {
 
 	$current_site = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->site WHERE id = %d LIMIT 0,1", $current_blog->site_id ) );
 
-	//this query seems weird
-	$current_site->blog_id = $wpdb->get_var( $wpdb->prepare( "SELECT blog_id FROM $wpdb->blogs WHERE domain = %s AND path = %s LIMIT 1", $current_site->domain, $current_site->path ) );
-
 	if( function_exists( 'get_current_site_name' ) )
 		$current_site = get_current_site_name( $current_site );
 
