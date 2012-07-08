@@ -10,7 +10,7 @@ if ( defined( 'COOKIE_DOMAIN' ) )
 $wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
 
 //capture the current domain request and if it includes www, strip that out for an alternate
-$requested_domain = $_SERVER[ 'HTTP_HOST' ];
+$requested_domain = $_SERVER['HTTP_HOST'];
 $alternate_domain = preg_replace( '|^www\.|', '', $requested_domain );
 
 if ( $requested_domain != $alternate_domain )
