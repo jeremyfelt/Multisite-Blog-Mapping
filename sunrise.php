@@ -7,13 +7,14 @@ if ( defined( 'COOKIE_DOMAIN' ) )
 	die( 'The constant "COOKIE_DOMAIN" is defined (probably in wp-config.php). Please remove or comment out that define() line.' );
 
 //set our custom table name using the WP DB prefix
+// @todo it would be lovely to remove the custom table entirely
 $wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
 
 //capture the current domain request and if it includes www, strip that out for an alternate
 $requested_domain = $_SERVER['HTTP_HOST'];
 $alternate_domain = preg_replace( '|^www\.|', '', $requested_domain );
 
-if ( $requested_domain != $alternate_domain )
+if ( $requested_domain !== $alternate_domain )
 	$where = $wpdb->prepare( 'domain IN ( %s, %s )', $requested_domain, $alternate_domain );
 else
 	$where = $wpdb->prepare( 'domain = %s', $requested_domain );
@@ -22,7 +23,9 @@ else
 $suppression = $wpdb->suppress_errors();
 
 //get the blog_id from our custom SQL tables that matches the domain requested
-$domain_mapping_blog_id = $wpdb->get_var( $wpdb->prepare( "SELECT blog_id FROM $wpdb->dmtable WHERE {$where} ORDER BY CHAR_LENGTH(domain) DESC LIMIT 1" ) );
+// prepare is not needed as where is already prepared
+//@todo this should look to a cache key first before going to the DB
+$domain_mapping_blog_id = $wpdb->get_var( "SELECT blog_id FROM $wpdb->dmtable WHERE {$where} ORDER BY CHAR_LENGTH(domain) DESC LIMIT 1" );
 
 //reset error suppression setting
 $wpdb->suppress_errors( $suppression );
@@ -49,6 +52,8 @@ if( $domain_mapping_blog_id ) {
 
 	//add blog_id to the current_site object (necessary)
 	$current_site->blog_id = $blog_id;
+
+	// @todo set a cache key here
 
 	//have the site name attached to the current_site object (necessary)
 	$current_site = get_current_site_name( $current_site );
