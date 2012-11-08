@@ -38,6 +38,14 @@ $wpdb->suppress_errors( $suppression );
  */
 if( $domain_mapping_blog_id ) {
 
+	/**
+	 * We have a successful blog ID to map to, so we should store this in cache for use
+	 * at a later time. We can use the alternate domain as part of the key because
+	 * www is nonsense.
+	 * @todo determine if this is a valid key strategy
+	 */
+	wp_cache_set( 'mbm-' . $alternate_domain, $domain_mapping_blog_id );
+
 	$current_blog = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->blogs WHERE blog_id = %d LIMIT 1", $domain_mapping_blog_id ) );
 
 	//modify the WP DB's version of the domain and path to our domain mapped version
