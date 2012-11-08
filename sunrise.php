@@ -6,12 +6,11 @@ if ( ! defined( 'SUNRISE_LOADED' ) )
 if ( defined( 'COOKIE_DOMAIN' ) )
 	die( 'The constant "COOKIE_DOMAIN" is defined (probably in wp-config.php). Please remove or comment out that define() line.' );
 
-
-//set our custom table name using the WP DB prefix
+// set our custom table name using the WP DB prefix
 // @todo it would be lovely to remove the custom table entirely
 $wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
 
-//capture the current domain request and if it includes www, strip that out for an alternate
+// capture the current domain request
 $requested_domain = $_SERVER['HTTP_HOST'];
 
 /**
@@ -22,7 +21,7 @@ $requested_domain = $_SERVER['HTTP_HOST'];
 $domain_mapping_blog_id = wp_cache_get( 'mbm-' . $requested_domain );
 
 if ( 0 == absint( $domain_mapping_blog_id ) ) {
-
+	// If the request included www, we want to treat the alternative root domain the same
 	$alternate_domain = preg_replace( '|^www\.|', '', $requested_domain );
 
 	if ( $requested_domain !== $alternate_domain )
@@ -37,7 +36,6 @@ if ( 0 == absint( $domain_mapping_blog_id ) ) {
 
 	//reset error suppression setting
 	$wpdb->suppress_errors( $suppression );
-
 }
 
 /**
@@ -47,7 +45,6 @@ if ( 0 == absint( $domain_mapping_blog_id ) ) {
  * that it is available for the remaining operations on this page request.
  */
 if( $domain_mapping_blog_id ) {
-
 	/**
 	 * We have a successful blog ID to map to, so we should store this in cache for use
 	 * at a later time. We can use the alternate domain as part of the key because
@@ -78,5 +75,4 @@ if( $domain_mapping_blog_id ) {
 
 	define( 'COOKIE_DOMAIN', $requested_domain );
 	define( 'DOMAIN_MAPPING', 1 );
-
 }
