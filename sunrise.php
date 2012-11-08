@@ -22,10 +22,15 @@ else
 //suppress errors and capture current suppression setting
 $suppression = $wpdb->suppress_errors();
 
-//get the blog_id from our custom SQL tables that matches the domain requested
-// prepare is not needed as where is already prepared
-//@todo this should look to a cache key first before going to the DB
-$domain_mapping_blog_id = $wpdb->get_var( "SELECT blog_id FROM $wpdb->dmtable WHERE {$where} ORDER BY CHAR_LENGTH(domain) DESC LIMIT 1" );
+/**
+ * Check our mbm cache key for the requested domain to see if we already know of a valid
+ * blog ID. We check to see if it's valid via absint() before continuing and grab it from
+ * the database if really necessary.
+ */
+$domain_mapping_blog_id = wp_cache_get( 'mbm-' . $alternate_domain );
+
+if ( 0 == absint( $domain_mapping_blog_id ) )
+	$domain_mapping_blog_id = $wpdb->get_var( "SELECT blog_id FROM $wpdb->dmtable WHERE {$where} ORDER BY CHAR_LENGTH(domain) DESC LIMIT 1" );
 
 //reset error suppression setting
 $wpdb->suppress_errors( $suppression );
