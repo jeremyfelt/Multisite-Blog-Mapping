@@ -6,6 +6,7 @@ if ( ! defined( 'SUNRISE_LOADED' ) )
 if ( defined( 'COOKIE_DOMAIN' ) )
 	die( 'The constant "COOKIE_DOMAIN" is defined (probably in wp-config.php). Please remove or comment out that define() line.' );
 
+
 //set our custom table name using the WP DB prefix
 // @todo it would be lovely to remove the custom table entirely
 $wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
@@ -27,7 +28,7 @@ $suppression = $wpdb->suppress_errors();
  * blog ID. We check to see if it's valid via absint() before continuing and grab it from
  * the database if really necessary.
  */
-$domain_mapping_blog_id = wp_cache_get( 'mbm-' . $alternate_domain );
+$domain_mapping_blog_id = wp_cache_get( 'mbm-' . $requested_domain );
 
 if ( 0 == absint( $domain_mapping_blog_id ) )
 	$domain_mapping_blog_id = $wpdb->get_var( "SELECT blog_id FROM $wpdb->dmtable WHERE {$where} ORDER BY CHAR_LENGTH(domain) DESC LIMIT 1" );
@@ -49,7 +50,7 @@ if( $domain_mapping_blog_id ) {
 	 * www is nonsense.
 	 * @todo determine if this is a valid key strategy
 	 */
-	wp_cache_set( 'mbm-' . $alternate_domain, $domain_mapping_blog_id );
+	wp_cache_set( 'mbm-' . $requested_domain, $domain_mapping_blog_id );
 
 	$current_blog = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->blogs WHERE blog_id = %d LIMIT 1", $domain_mapping_blog_id ) );
 
