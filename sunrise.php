@@ -56,7 +56,7 @@ if( $domain_mapping_blog_id ) {
 	 */
 	wp_cache_set( 'mbm-' . $requested_domain, $domain_mapping_blog_id );
 
-	$current_blog = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->blogs WHERE blog_id = %d LIMIT 1", $domain_mapping_blog_id ) );
+	$current_blog = get_blog_details( $domain_mapping_blog_id );
 
 	//modify the WP DB's version of the domain and path to our domain mapped version
 	$current_blog->domain = $requested_domain;
