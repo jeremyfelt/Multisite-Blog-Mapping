@@ -1,19 +1,23 @@
 <?php
 /*
-Plugin Name: WordPress MU Domain Mapping
-Plugin URI: http://ocaoimh.ie/wordpress-mu-domain-mapping/
-Description: Map any blog on a WordPress website to another domain.
-Version: 0.5.4.2
-Author: Donncha O Caoimh
-Author URI: http://ocaoimh.ie/
+Plugin Name: Multisite Blog Mapping
+Plugin URL: https://github.com/jeremyfelt/Multisite-Blog-Mapping
+Description: Provide a mapping for blog IDs to full domains in WordPress
+Version: 0.1
+Author: Jeremy Felt
+Author URI: http://jeremyfelt.com
 */
-/*  Copyright Donncha O Caoimh (http://ocaoimh.ie/)
-    With contributions by Ron Rennick(http://wpmututorials.com/), Greg Sidberry and others.
+
+/*
+Original plugin forked from WordPress MU Domain Mapping by Donncha O Caoimh (http://ocaoimh.ie)
+Original Plugin URL: http://wordpress.org/extend/plugins/wordpress-mu-domain-mapping/
+*/
+
+/*  Copyright 2012 Jeremy Felt (email: jeremy.felt@gmail.com)
 
     This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License, version 2, as
+    published by the Free Software Foundation.
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -22,7 +26,7 @@ Author URI: http://ocaoimh.ie/
 
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 function dm_text_domain() {
