@@ -13,15 +13,6 @@ $wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
 
 //capture the current domain request and if it includes www, strip that out for an alternate
 $requested_domain = $_SERVER['HTTP_HOST'];
-$alternate_domain = preg_replace( '|^www\.|', '', $requested_domain );
-
-if ( $requested_domain !== $alternate_domain )
-	$where = $wpdb->prepare( 'domain IN ( %s, %s )', $requested_domain, $alternate_domain );
-else
-	$where = $wpdb->prepare( 'domain = %s', $requested_domain );
-
-//suppress errors and capture current suppression setting
-$suppression = $wpdb->suppress_errors();
 
 /**
  * Check our mbm cache key for the requested domain to see if we already know of a valid
@@ -30,11 +21,24 @@ $suppression = $wpdb->suppress_errors();
  */
 $domain_mapping_blog_id = wp_cache_get( 'mbm-' . $requested_domain );
 
-if ( 0 == absint( $domain_mapping_blog_id ) )
+if ( 0 == absint( $domain_mapping_blog_id ) ) {
+
+	$alternate_domain = preg_replace( '|^www\.|', '', $requested_domain );
+
+	if ( $requested_domain !== $alternate_domain )
+		$where = $wpdb->prepare( 'domain IN ( %s, %s )', $requested_domain, $alternate_domain );
+	else
+		$where = $wpdb->prepare( 'domain = %s', $requested_domain );
+
+	//suppress errors and capture current suppression setting
+	$suppression = $wpdb->suppress_errors();
+
 	$domain_mapping_blog_id = $wpdb->get_var( "SELECT blog_id FROM $wpdb->dmtable WHERE {$where} ORDER BY CHAR_LENGTH(domain) DESC LIMIT 1" );
 
-//reset error suppression setting
-$wpdb->suppress_errors( $suppression );
+	//reset error suppression setting
+	$wpdb->suppress_errors( $suppression );
+
+}
 
 /**
  * If we found a blog_id to match the domain above, then we turn to WordPress to get the
