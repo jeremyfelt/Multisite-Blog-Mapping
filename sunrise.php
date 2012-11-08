@@ -36,6 +36,15 @@ if ( 0 == absint( $domain_mapping_blog_id ) ) {
 
 	//reset error suppression setting
 	$wpdb->suppress_errors( $suppression );
+
+	/**
+	 * We have a successful blog ID to map to, so we should store this in cache for use
+	 * at a later time. We can use the alternate domain as part of the key because
+	 * www is nonsense.
+	 * @todo determine if this is a valid key strategy
+	 */
+	if ( $domain_mapping_blog_id )
+		wp_cache_set( 'mbm-' . $requested_domain, $domain_mapping_blog_id );
 }
 
 /**
@@ -45,13 +54,6 @@ if ( 0 == absint( $domain_mapping_blog_id ) ) {
  * that it is available for the remaining operations on this page request.
  */
 if( $domain_mapping_blog_id ) {
-	/**
-	 * We have a successful blog ID to map to, so we should store this in cache for use
-	 * at a later time. We can use the alternate domain as part of the key because
-	 * www is nonsense.
-	 * @todo determine if this is a valid key strategy
-	 */
-	wp_cache_set( 'mbm-' . $requested_domain, $domain_mapping_blog_id );
 
 	$current_blog = get_blog_details( $domain_mapping_blog_id );
 
