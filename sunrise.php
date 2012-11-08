@@ -63,14 +63,38 @@ if( $domain_mapping_blog_id ) {
 	$blog_id = $domain_mapping_blog_id;
 	$site_id = $current_blog->site_id;
 
-	$current_site = $wpdb->get_row( $wpdb->prepare( "SELECT * from $wpdb->site WHERE id = %d LIMIT 0,1", $site_id ) );
+	/**
+	 * Look for our site object data in a custom cache key. It seems like we could use the core
+	 * functionality for this, but core really isn't multiple site ID friendly, so we might as
+	 * well handle the just in case until I better understand what wpmu_current_site() can do
+	 * for this.
+	 *
+	 * If we don't find any cached data, go to the database for the current site object and
+	 * then create/set our cached data for future requests.
+	 */
+	$current_site_data = wp_cache_get( 'mbm-site-' . $site_id );
 
-	//add blog_id to the current_site object (necessary)
+	if ( ! $current_site_data ) {
+		$current_site = $wpdb->get_row( $wpdb->prepare( "SELECT * from $wpdb->site WHERE id = %d LIMIT 0,1", $site_id ) );
+		if ( $current_site ) {
+			$current_site_data = array(
+				'id'     => $current_site->id,
+				'domain' => $current_site->domain,
+				'path'   => $current_site->path,
+			);
+			wp_cache_set( 'mbm-site-' . $site_id, $current_site_data );
+		}
+	} else {
+		$current_site = new stdClass();
+		$current_site->id     = $current_site_data['id'];
+		$current_site->domain = $current_site_data['domain'];
+		$current_site->path   = $current_site_data['path'];
+	}
+
+	// Add blog ID after the fact because it is required by both scenarios
 	$current_site->blog_id = $blog_id;
 
-	// @todo set a cache key here
-
-	//have the site name attached to the current_site object (necessary)
+	// Attach the site name to our current_site object. This uses cache already.
 	$current_site = get_current_site_name( $current_site );
 
 	define( 'COOKIE_DOMAIN', $requested_domain );
