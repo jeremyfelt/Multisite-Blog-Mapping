@@ -133,3 +133,67 @@ function dm_sunrise_warning( $die = true ) {
 	}
 	return true;
 }
+
+add_action( 'admin_init', 'dm_redirect_admin' );
+/**
+ * Redirects the admin URL ( i.e. www.domain.com/wp-admin/ ) to the original site URL
+ * that WordPress is aware of (i.e. domain.my.sites.com/wp-admin/ )
+ *
+ * @return NULL if this is not a valid request
+ */
+function dm_redirect_admin() {
+
+	// don't redirect admin ajax calls
+	if ( defined( 'DOING_AJAX' ) && DOING_AJAX )
+		return;
+
+	if ( get_site_option( 'dm_redirect_admin' ) ) {
+		// redirect mapped domain admin page to original url
+		$url = get_original_url( 'siteurl' );
+		if ( false === strpos( $url, $_SERVER[ 'HTTP_HOST' ] ) ) {
+			wp_redirect( untrailingslashit( $url ) . $_SERVER[ 'REQUEST_URI' ] );
+			exit;
+		}
+	} else {
+		global $current_blog;
+		// redirect original url to primary domain wp-admin/ - remote login is disabled!
+		$url = domain_mapping_siteurl( false );
+		$request_uri = str_replace( $current_blog->path, '/', $_SERVER[ 'REQUEST_URI' ] );
+		if ( false === strpos( $url, $_SERVER[ 'HTTP_HOST' ] ) ) {
+			wp_redirect( str_replace( '//wp-admin', '/wp-admin', trailingslashit( $url ) . $request_uri ) );
+			exit;
+		}
+	}
+}
+
+// show mapping on site admin blogs screen
+function ra_domain_mapping_columns( $columns ) {
+	$columns[ 'map' ] = __( 'Mapping' );
+	return $columns;
+}
+add_filter( 'wpmu_blogs_columns', 'ra_domain_mapping_columns' );
+
+function ra_domain_mapping_field( $column, $blog_id ) {
+	global $wpdb;
+	static $maps = false;
+
+	if ( $column == 'map' ) {
+		if ( $maps === false ) {
+			$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
+			$work = $wpdb->get_results( "SELECT blog_id, domain FROM {$wpdb->dmtable} ORDER BY blog_id" );
+			$maps = array();
+			if($work) {
+				foreach( $work as $blog ) {
+					$maps[ $blog->blog_id ][] = $blog->domain;
+				}
+			}
+		}
+		if( !empty( $maps[ $blog_id ] ) && is_array( $maps[ $blog_id ] ) ) {
+			foreach( $maps[ $blog_id ] as $blog ) {
+				echo $blog . '<br />';
+			}
+		}
+	}
+}
+add_action( 'manage_blogs_custom_column', 'ra_domain_mapping_field', 1, 3 );
+add_action( 'manage_sites_custom_column', 'ra_domain_mapping_field', 1, 3 );
