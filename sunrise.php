@@ -6,10 +6,6 @@ if ( ! defined( 'SUNRISE_LOADED' ) )
 if ( defined( 'COOKIE_DOMAIN' ) )
 	die( 'The constant "COOKIE_DOMAIN" is defined (probably in wp-config.php). Please remove or comment out that define() line.' );
 
-// set our custom table name using the WP DB prefix
-// @todo it would be lovely to remove the custom table entirely
-$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
-
 // capture the current domain request
 $requested_domain = $_SERVER['HTTP_HOST'];
 
@@ -25,14 +21,18 @@ if ( 0 == absint( $domain_mapping_blog_id ) ) {
 	$alternate_domain = preg_replace( '|^www\.|', '', $requested_domain );
 
 	if ( $requested_domain !== $alternate_domain )
-		$where = $wpdb->prepare( 'domain IN ( %s, %s )', $requested_domain, $alternate_domain );
+		$where = $wpdb->prepare( 'wp_postmeta.meta_value IN ( %s, %s )', $requested_domain, $alternate_domain );
 	else
-		$where = $wpdb->prepare( 'domain = %s', $requested_domain );
+		$where = $wpdb->prepare( 'wp_postmeta.meta_value = %s', $requested_domain );
 
 	//suppress errors and capture current suppression setting
 	$suppression = $wpdb->suppress_errors();
 
-	$domain_mapping_blog_id = $wpdb->get_var( "SELECT blog_id FROM $wpdb->dmtable WHERE {$where} ORDER BY CHAR_LENGTH(domain) DESC LIMIT 1" );
+	// @todo can these be one query?
+	// Grab the post ID from the custom post type storing the domain mapping
+	$domain_mapping_post_id = $wpdb->get_var( "SELECT wp_posts.ID FROM wp_posts INNER JOIN wp_postmeta ON wp_posts.ID = wp_postmeta.post_id WHERE wp_posts.post_type='mbm_domain' AND wp_posts.post_status = 'publish' AND wp_postmeta.meta_key = '_mbm_domain_name' AND {$where} ORDER BY CHAR_LENGTH(wp_postmeta.meta_value) DESC LIMIT 1 " );
+	// Use the post ID from the first query to get the blog ID
+	$domain_mapping_blog_id = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM wp_postmeta WHERE post_id= %d AND meta_key='_mbm_domain_blog_id'", $domain_mapping_post_id ) );
 
 	//reset error suppression setting
 	$wpdb->suppress_errors( $suppression );

@@ -96,7 +96,7 @@ class Mbm_Domain_Foghlaim {
 	/**
 	 * Display the blog ID meta box that will capture the blog ID associated
 	 * with this mapping.
-	 * 
+	 *
 	 * @param $post WP_Post
 	 */
 	public function display_blog_id_meta_box( $post ) {
