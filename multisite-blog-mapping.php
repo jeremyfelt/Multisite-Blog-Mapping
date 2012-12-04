@@ -31,87 +31,11 @@ Original Plugin URL: http://wordpress.org/extend/plugins/wordpress-mu-domain-map
 
 include __DIR__ . '/includes/class-mbm-domain-foghlaim.php';
 
-function dm_text_domain() {
-	load_plugin_textdomain( 'wordpress-mu-domain-mapping', basename( dirname( __FILE__ ) )  . 'languages', 'wordpress-mu-domain-mapping/languages' );
-}
-add_action( 'init', 'dm_text_domain' );
-
 function dm_network_pages() {
 	add_submenu_page( 'settings.php', 'Domain Mapping', 'Domain Mapping', 'manage_options', 'dm_admin_page', 'dm_admin_page' );
-	add_submenu_page( 'settings.php', 'Domains', 'Domains', 'manage_options', 'dm_domains_admin', 'dm_domains_admin' );
 }
 add_action( 'network_admin_menu', 'dm_network_pages' );
 
-/**
- * Default messages for the domain mapping management page. Can be replaced
- * by removing and re-adding the dm_echo_updated_msg with custom messaging.
- *
- * @return NULL output is echoed if applicable
- */
-function dm_echo_default_updated_msg() {
-
-	if ( ! isset( $_GET['updated'] ) )
-		return;
-
-	switch( $_GET['updated'] ) {
-		case 'add':
-			$msg = __( 'New domain added.', 'wordpress-mu-domain-mapping' );
-			break;
-		case 'exists':
-			$msg = __( 'New domain already exists.', 'wordpress-mu-domain-mapping' );
-			break;
-		case 'primary':
-			$msg = __( 'New primary domain.', 'wordpress-mu-domain-mapping' );
-			break;
-		case 'del':
-			$msg = __( 'Domain deleted.', 'wordpress-mu-domain-mapping' );
-			break;
-	}
-
-	if ( isset( $msg ) )
-		echo '<div class="updated fade"><p>' . $msg . '</p></div>';
-
-}
-add_action( 'dm_echo_updated_msg', 'dm_echo_default_updated_msg' );
-
-function maybe_create_db() {
-	global $wpdb;
-
-	get_dm_hash(); // initialise the remote login hash
-
-	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
-	$wpdb->dmtablelogins = $wpdb->base_prefix . 'domain_mapping_logins';
-
-	if ( is_super_admin() ) {
-		$created = false;
-
-		if ( $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->dmtable}'") != $wpdb->dmtable ) {
-			$wpdb->query( "CREATE TABLE IF NOT EXISTS `{$wpdb->dmtable}` (
-				`id` bigint(20) NOT NULL auto_increment,
-				`blog_id` bigint(20) NOT NULL,
-				`domain` varchar(255) NOT NULL,
-				`active` tinyint(4) default '1',
-				PRIMARY KEY  (`id`),
-				KEY `blog_id` (`blog_id`,`domain`,`active`)
-			);" );
-			$created = 1;
-		}
-
-		if ( $wpdb->get_var("SHOW TABLES LIKE '{$wpdb->dmtablelogins}'") != $wpdb->dmtablelogins ) {
-			$wpdb->query( "CREATE TABLE IF NOT EXISTS `{$wpdb->dmtablelogins}` (
-				`id` varchar(32) NOT NULL,
-				`user_id` bigint(20) NOT NULL,
-				`blog_id` bigint(20) NOT NULL,
-				`t` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
-				PRIMARY KEY  (`id`)
-			);" );
-			$created = 1;
-		}
-
-		if ( $created )
-			echo '<div id="message" class="updated fade"><p><strong>' . __( 'Domain mapping database table created.', 'wordpress-mu-domain-mapping' ) . '</strong></p></div>';
-	}
-}
 
 function dm_domains_admin() {
 	global $wpdb, $current_site;
@@ -251,11 +175,9 @@ function dm_admin_page() {
 		return false;
 
 	dm_sunrise_warning();
-	maybe_create_db();
 
 	if ( '/' != $current_site->path )
 		wp_die( sprintf( __( '<strong>Warning!</strong> This plugin will only work if WordPress is installed in the root directory of your webserver. It is currently installed in &#8217;%s&#8217;.', 'wordpress-mu-domain-mapping' ), $current_site->path ) );
-
 
 	// set up some defaults
 	if ( ! get_site_option( 'dm_remote_login', false ) )
