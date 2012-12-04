@@ -17,6 +17,7 @@ class Mbm_Domain_Foghlaim {
 	private function __construct() {
 		add_action( 'init', array( $this, 'register_content_type' ) );
 		add_filter( 'parent_file', array( $this, 'modify_network_menu' ) );
+		add_action( 'save_post', array( $this, 'save_meta_data' ), 10, 2 );
 	}
 
 	/**
@@ -67,12 +68,69 @@ class Mbm_Domain_Foghlaim {
 	}
 
 	/**
+	 * Add meta boxes to be displayed when adding/editing the domain custom
+	 * content type
+	 *
+	 * @param $post WP_Post
+	 */
+	public function register_meta_boxes( $post ) {
+		add_meta_box( 'mbm_domain_name', 'Domain Name:', array( $this, 'display_domain_name_meta_box' ), $post->post_type, 'normal', 'default' );
+	}
+
+	/**
+	 * Display the domain name meta box that will capture the actual domain
+	 * name associated with this mapping.
+	 *
+	 * @param $post WP_Post
+	 */
+	public function display_domain_name_meta_box( $post ) {
+		$domain_name = get_post_meta( $post->ID, '_mbm_domain_name', true );
+		wp_nonce_field( 'mbm-domain-meta-data', '_mbm_domain_plugin_nonce' );
+		?>
+		<label for="mbm-domain-name">Enter the domain name for this mapping: (www.domain.com)</label>
+		<input id="mbm-domain-name" name="mbm_domain_name" type="text" value="<?php echo esc_attr( $domain_name ); ?>" class="widefat" />
+		<?php
+	}
+
+	/**
+	 * Save the post meta data for the domain content type as it is submitted.
+	 *
+	 * @param $post_id int containing current post's ID
+	 * @param $post WP_POST containing current post's object
+	 *
+	 * @return null always with the null, it's an action!
+	 */
+	public function save_meta_data( $post_id, $post ) {
+		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
+			return NULL;
+
+		if ( 'auto-draft' === $post->post_status )
+			return NULL;
+
+		if ( ! isset( $_POST['_mbm_domain_plugin_nonce'] ) || ! wp_verify_nonce( $_POST['_mbm_domain_plugin_nonce'], 'mbm-domain-meta-data' ) )
+			return NULL;
+
+		if ( isset( $_POST['mbm_domain_name'] ) ) {
+
+			// @todo maybe unhackety
+			// escape the domain name here, but then strip off the http - hacky, but I'm sleepy.
+			$domain_name = trim( str_replace( 'http://', '', esc_url_raw( $_POST['mbm_domain_name'] ) ) );
+			if ( empty( $domain_name ) )
+				return NULL;
+
+			update_post_meta( $post_id, '_mbm_domain_name', $domain_name );
+		}
+
+		return NULL;
+	}
+
+	/**
 	 * Manually add an option for the domain custom content type to the menu
 	 * in the network admin. This is so ugly and not permanent, but whatever.
 	 *
 	 * The ugly hacks hurt kittens. I'm so sorry.
 	 */
-	function modify_network_menu() {
+	public function modify_network_menu() {
 		global $menu, $submenu;
 
 		// A hacked modification is only necessary in the network dashboard
