@@ -75,6 +75,7 @@ class Mbm_Domain_Foghlaim {
 	 */
 	public function register_meta_boxes( $post ) {
 		add_meta_box( 'mbm_domain_name', 'Domain Name:', array( $this, 'display_domain_name_meta_box' ), $post->post_type, 'normal', 'default' );
+		add_meta_box( 'mbm_domain_blog_id', 'Blog ID:', array( $this, 'display_blog_id_meta_box' ), $post->post_type, 'normal', 'default' );
 	}
 
 	/**
@@ -89,6 +90,20 @@ class Mbm_Domain_Foghlaim {
 		?>
 		<label for="mbm-domain-name">Enter the domain name for this mapping: (www.domain.com)</label>
 		<input id="mbm-domain-name" name="mbm_domain_name" type="text" value="<?php echo esc_attr( $domain_name ); ?>" class="widefat" />
+		<?php
+	}
+
+	/**
+	 * Display the blog ID meta box that will capture the blog ID associated
+	 * with this mapping.
+	 * 
+	 * @param $post WP_Post
+	 */
+	public function display_blog_id_meta_box( $post ) {
+		$blog_id = get_post_meta( $post->ID, '_mbm_domain_blog_id', true );
+		?>
+		<label for="mbm-domain-blog-id">Enter the blog ID for this mapping:</label>
+		<input id="mbm-domain-blog-id" name="mbm_domain_blog_id" type="text" value="<?php echo esc_attr( $blog_id ); ?>" class="widefat" />
 		<?php
 	}
 
@@ -120,6 +135,9 @@ class Mbm_Domain_Foghlaim {
 
 			update_post_meta( $post_id, '_mbm_domain_name', $domain_name );
 		}
+
+		if ( isset( $_POST['mbm_domain_blog_id'] ) && 0 !== absint( $_POST['mbm_domain_blog_id'] ) )
+			update_post_meta( $post_id, '_mbm_domain_blog_id', absint( $_POST['mbm_domain_blog_id'] ) );
 
 		return NULL;
 	}
