@@ -665,7 +665,3 @@ function ra_domain_mapping_field( $column, $blog_id ) {
 }
 add_action( 'manage_blogs_custom_column', 'ra_domain_mapping_field', 1, 3 );
 add_action( 'manage_sites_custom_column', 'ra_domain_mapping_field', 1, 3 );
-
-function dm_idn_warning() {
-	return sprintf( __( 'International Domain Names should be in <a href="%s">punycode</a> format.', 'wordpress-mu-domain-mapping' ), "http://api.webnic.cc/idnconversion.html" );
-}

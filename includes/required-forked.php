@@ -92,6 +92,15 @@ function dm_admin_page() {
 
 }
 
+/**
+ * Called in dm_admin_page() to output a warning about International domain names
+ *
+ * @return string
+ */
+function dm_idn_warning() {
+	return sprintf( __( 'International Domain Names should be in <a href="%s">punycode</a> format.', 'wordpress-mu-domain-mapping' ), "http://api.webnic.cc/idnconversion.html" );
+}
+
 function dm_sunrise_warning( $die = true ) {
 
 	if ( ! file_exists( WP_CONTENT_DIR . '/sunrise.php' ) ) {
