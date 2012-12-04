@@ -163,58 +163,6 @@ function dm_domain_listing( $rows, $heading = '' ) {
 	}
 }
 
-function dm_handle_actions() {
-	global $wpdb, $parent_file;
-	$url = add_query_arg( array( 'page' => 'domainmapping' ), admin_url( $parent_file ) );
-	if ( !empty( $_POST[ 'action' ] ) ) {
-		$domain = $wpdb->escape( $_POST[ 'domain' ] );
-		if ( $domain == '' ) {
-			wp_die( "You must enter a domain" );
-		}
-		check_admin_referer( 'domain_mapping' );
-		do_action('dm_handle_actions_init', $domain);
-		switch( $_POST[ 'action' ] ) {
-			case "add":
-				do_action('dm_handle_actions_add', $domain);
-				if( NULL == $wpdb->get_row( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain = '$domain'" ) && NULL == $wpdb->get_row( "SELECT blog_id FROM {$wpdb->dmtable} WHERE domain = '$domain'" ) ) {
-					if ( $_POST[ 'primary' ] ) {
-						$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 0 WHERE blog_id = %d", $wpdb->blogid ) );
-					}
-					$wpdb->query( $wpdb->prepare( "INSERT INTO {$wpdb->dmtable} ( `id` , `blog_id` , `domain` , `active` ) VALUES ( NULL, %d, %s, %d )", $wpdb->blogid, $domain, $_POST[ 'primary' ] ) );
-					wp_redirect( add_query_arg( array( 'updated' => 'add' ), $url ) );
-					exit;
-				} else {
-					wp_redirect( add_query_arg( array( 'updated' => 'exists' ), $url ) );
-					exit;
-				}
-				break;
-			case "primary":
-				do_action('dm_handle_actions_primary', $domain);
-				$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 0 WHERE blog_id = %d", $wpdb->blogid ) );
-				$orig_url = parse_url( get_original_url( 'siteurl' ) );
-				if( $domain != $orig_url[ 'host' ] ) {
-					$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->dmtable} SET active = 1 WHERE domain = %s", $domain ) );
-				}
-				wp_redirect( add_query_arg( array( 'updated' => 'primary' ), $url ) );
-				exit;
-				break;
-		}
-	} elseif( $_GET[ 'action' ] == 'delete' ) {
-		$domain = $wpdb->escape( $_GET[ 'domain' ] );
-		if ( $domain == '' ) {
-			wp_die( __( "You must enter a domain", 'wordpress-mu-domain-mapping' ) );
-		}
-		check_admin_referer( "delete" . $_GET['domain'] );
-		do_action('dm_handle_actions_del', $domain);
-		$wpdb->query( "DELETE FROM {$wpdb->dmtable} WHERE domain = '$domain'" );
-		wp_redirect( add_query_arg( array( 'updated' => 'del' ), $url ) );
-		exit;
-	}
-
-}
-if ( isset( $_GET[ 'page' ] ) && $_GET[ 'page' ] == 'domainmapping' )
-	add_action( 'admin_init', 'dm_handle_actions' );
-
 function dm_manage_page() {
 	global $wpdb, $parent_file;
 
