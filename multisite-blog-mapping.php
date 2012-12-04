@@ -29,6 +29,8 @@ Original Plugin URL: http://wordpress.org/extend/plugins/wordpress-mu-domain-map
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+include __DIR__ . '/includes/class-mbm-domain-foghlaim.php';
+
 function dm_text_domain() {
 	load_plugin_textdomain( 'wordpress-mu-domain-mapping', basename( dirname( __FILE__ ) )  . 'languages', 'wordpress-mu-domain-mapping/languages' );
 }
