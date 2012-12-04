@@ -18,6 +18,7 @@ class Mbm_Domain_Foghlaim {
 		add_action( 'init', array( $this, 'register_content_type' ) );
 		add_filter( 'parent_file', array( $this, 'modify_network_menu' ) );
 		add_action( 'save_post', array( $this, 'save_meta_data' ), 10, 2 );
+		add_action( 'delete_blog', array( $this, 'delete_blog' ), 10, 2 );
 	}
 
 	/**
@@ -139,6 +140,21 @@ class Mbm_Domain_Foghlaim {
 		if ( isset( $_POST['mbm_domain_blog_id'] ) && 0 !== absint( $_POST['mbm_domain_blog_id'] ) )
 			update_post_meta( $post_id, '_mbm_domain_blog_id', absint( $_POST['mbm_domain_blog_id'] ) );
 
+		return NULL;
+	}
+
+	/**
+	 * Called when a blog is deleted
+	 *
+	 * @todo something to delete the entries in the domain mapping that we have setup
+	 * @todo find out what $drop represents
+	 *
+	 * @param $blog_id
+	 * @param $drop
+	 *
+	 * @return null
+	 */
+	public function delete_blog( $blog_id, $drop ) {
 		return NULL;
 	}
 

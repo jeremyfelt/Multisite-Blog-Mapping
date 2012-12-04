@@ -620,20 +620,6 @@ function remote_login_js_loader() {
 	echo "<script src='{$protocol}{$current_site->domain}{$current_site->path}?dm={$hash}&amp;action=load&amp;blogid={$current_blog->blog_id}&amp;siteid={$current_blog->site_id}&amp;t=" . mt_rand() . "&amp;back=" . urlencode( $protocol . $current_blog->domain . $_SERVER[ 'REQUEST_URI' ] ) . "' type='text/javascript'></script>";
 }
 
-// delete mapping if blog is deleted
-function delete_blog_domain_mapping( $blog_id, $drop ) {
-	global $wpdb;
-	$wpdb->dmtable = $wpdb->base_prefix . 'domain_mapping';
-	if ( $blog_id && $drop ) {
-		// Get an array of domain names to pass onto any delete_blog_domain_mapping actions
-		$domains = $wpdb->get_col( $wpdb->prepare( "SELECT domain FROM {$wpdb->dmtable} WHERE blog_id  = %d", $blog_id ) );
-		do_action('dm_delete_blog_domain_mappings', $domains);
-
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->dmtable} WHERE blog_id  = %d", $blog_id ) );
-	}
-}
-add_action( 'delete_blog', 'delete_blog_domain_mapping', 1, 2 );
-
 // show mapping on site admin blogs screen
 function ra_domain_mapping_columns( $columns ) {
 	$columns[ 'map' ] = __( 'Mapping' );
