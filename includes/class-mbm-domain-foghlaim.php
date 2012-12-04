@@ -31,6 +31,10 @@ class Mbm_Domain_Foghlaim {
 		return self::$instance;
 	}
 
+	/**
+	 * Register the domain content type. This will allow the storage of domain
+	 * and domain mapping data as a custom content type in WordPress.
+	 */
 	public function register_content_type() {
 		$content_type_labels = array(
 			'name'               => 'Site Domains',
@@ -71,7 +75,9 @@ class Mbm_Domain_Foghlaim {
 	function modify_network_menu() {
 		global $menu, $submenu;
 
-		if ( ! strpos( $_SERVER['PHP_SELF'], 'wp-admin/network' ) )
+		// A hacked modification is only necessary in the network dashboard
+		$current_screen = get_current_screen();
+		if ( 'dashboard-network' !== $current_screen->base )
 			return;
 
 		$menu[6] = array(
