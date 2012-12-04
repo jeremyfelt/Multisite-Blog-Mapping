@@ -33,7 +33,7 @@ class Mbm_Domain_Foghlaim {
 
 	public function register_content_type() {
 		$content_type_labels = array(
-			'name'               => 'Site Domain',
+			'name'               => 'Site Domains',
 			'singular_name'      => 'Site Domain',
 			'add_new'            => 'Add Domain',
 			'add_new_item'       => 'Add New Domain',
@@ -75,7 +75,7 @@ class Mbm_Domain_Foghlaim {
 			return;
 
 		$menu[6] = array(
-			'Site Domain',
+			'Site Domains',
 			'edit_posts',
 			'../edit.php?post_type=mbm_domain',
 			'',
@@ -83,6 +83,7 @@ class Mbm_Domain_Foghlaim {
 			'menu-posts-mbm_domain',
 			'none',
 		);
+		sort( $menu );
 
 		$submenu['../edit.php?post_type=mbm_domain'] = array(
 			5 => array(
